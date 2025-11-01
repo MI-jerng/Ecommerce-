@@ -49,12 +49,13 @@ const banners = ref([
         v-for="banner in banners" 
         :key="banner.heading"
         :class="banner.class"
+        :heading="banner.heading"
       >
         <template #text>
           <h2 class="banner-heading">{{ banner.heading }}</h2>
         </template>
-        <template #button>
-          <a href="#" :class="['shop-btn', banner.buttonClass]">
+        <template #button="{ onShopNow }">
+          <a href="#" :class="['shop-btn', banner.buttonClass]" @click.prevent="onShopNow">
             Shop Now <span class="arrow-svg-icon"></span>
           </a>
         </template>

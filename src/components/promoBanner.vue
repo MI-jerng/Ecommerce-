@@ -4,7 +4,7 @@
     <div class="content-area">
       <div class="text-and-button-area">
         <slot name="text"></slot>
-        <slot name="button"></slot>
+        <slot name="button" :onShopNow="handleShopNow"></slot>
       </div>
     </div>
 
@@ -15,8 +15,20 @@
   </div>
 </template>
 
-<script setup lang="ts">
-// No specific logic needed for this component yet
+<script lang="ts">
+export default {
+  props: {
+    heading: {
+      type: String,
+      required: true
+    }
+  },
+  methods: {
+    handleShopNow() {
+      alert(`Let's shop ${this.heading}`);
+    }
+  }
+}
 </script>
 
 <style scoped>
