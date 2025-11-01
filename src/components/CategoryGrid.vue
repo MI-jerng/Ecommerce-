@@ -18,21 +18,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
-// Data definition with image paths and desired background colors
-const categories = ref([
-  { name: 'Burger', count: 14, image: '/images/Burger.png', bgColor: '#F2FCE4' },
-  { name: 'Peach', count: 17, image: '/images/Peach.png', bgColor: '#FFFCEB' },
-  { name: 'Organic Kiwi', count: 23, image: '/images/Kiwi.png', bgColor: '#ECFFEC' },
-  { name: 'Red Apple', count: 68, image: '/images/Apple.png', bgColor: '#FEEFEA' },
-  { name: 'Snack', count: 34, image: '/images/snack.png', bgColor: '#FFF3EB' },
-  { name: 'Black plum', count: 29, image: '/images/Black-plum.png', bgColor: '#FFF3FF' },
-  { name: 'Vegetables', count: 15, image: '/images/Vegetable.png', bgColor: '#F2FCE4' },
-  { name: 'Headphone', count: 18, image: '/images/Headphone.png', bgColor: '#FFFCEB' },
-  { name: 'Cake & Milk', count: 34, image: '/images/Cake&Milk.png', bgColor: '#F2FCE4' },
-  { name: 'Orange', count: 63, image: '/images/Orange.png', bgColor: '#FFF3FF' },
-])
+defineProps<{
+  categories: Array<{
+    name: string;
+    count: number;
+    image: string;
+    bgColor: string;
+  }>;
+}>();
 </script>
 
 <style scoped>
@@ -71,8 +64,8 @@ const categories = ref([
 
 /* 2. Styling for the icon box (The inner WHITE circle) */
 .icon-box {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
     align-items: center;
     width: 100px;
     height: 100px;

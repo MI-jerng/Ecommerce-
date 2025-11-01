@@ -1,50 +1,67 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import CategoryGrid from './components/CategoryGrid.vue';
 import PromoBanner from './components/promoBanner.vue';
-</script>
 
+const categories = ref([
+  { name: 'Burger', count: 14, image: '/images/Burger.png', bgColor: '#F2FCE4' },
+  { name: 'Peach', count: 17, image: '/images/Peach.png', bgColor: '#FFFCEB' },
+  { name: 'Organic Kiwi', count: 23, image: '/images/Kiwi.png', bgColor: '#ECFFEC' },
+  { name: 'Red Apple', count: 68, image: '/images/Apple.png', bgColor: '#FEEFEA' },
+  { name: 'Snack', count: 34, image: '/images/snack.png', bgColor: '#FFF3EB' },
+  { name: 'Black plum', count: 29, image: '/images/Black-plum.png', bgColor: '#FFF3FF' },
+  { name: 'Vegetables', count: 15, image: '/images/Vegetable.png', bgColor: '#F2FCE4' },
+  { name: 'Headphone', count: 18, image: '/images/Headphone.png', bgColor: '#FFFCEB' },
+  { name: 'Cake & Milk', count: 34, image: '/images/Cake&Milk.png', bgColor: '#F2FCE4' },
+  { name: 'Orange', count: 63, image: '/images/Orange.png', bgColor: '#FFF3FF' },
+]);
+
+const banners = ref([
+  {
+    heading: 'Everyday Fresh & Clean with Our Products',
+    image: '/images/Onion-Banner.png',
+    imageAlt: 'Fresh Onions',
+    buttonClass: 'green-btn',
+    class: 'banner-onions'
+  },
+  {
+    heading: 'Make your Breakfast Healthy and Easy',
+    image: '/images/StrawberryMilk.png',
+    imageAlt: 'Breakfast Products',
+    buttonClass: 'green-btn',
+    class: 'banner-breakfast'
+  },
+  {
+    heading: 'The best Organic Products Online',
+    image: '/images/BacketOfVegetable.png',
+    imageAlt: 'Organic Products',
+    buttonClass: 'orange-btn',
+    class: 'banner-organic'
+  }
+]);
+</script>
 <template>
   <div class="home-page-container">
-    <CategoryGrid />
+    <CategoryGrid :categories="categories" />
 
     <section class="banner-group">
-
-      <PromoBanner class="banner-onions">
+      <PromoBanner 
+        v-for="banner in banners" 
+        :key="banner.heading"
+        :class="banner.class"
+      >
         <template #text>
-          <h2 class="banner-heading">Everyday Fresh & Clean with Our Products</h2>
+          <h2 class="banner-heading">{{ banner.heading }}</h2>
         </template>
         <template #button>
-          <a href="#" class="shop-btn green-btn">Shop Now <span class="arrow-svg-icon"></span></a>
+          <a href="#" :class="['shop-btn', banner.buttonClass]">
+            Shop Now <span class="arrow-svg-icon"></span>
+          </a>
         </template>
         <template #image>
-          <img src="/images/Onion-Banner.png" alt="Fresh Onions" class="banner-img" />
+          <img :src="banner.image" :alt="banner.imageAlt" class="banner-img" />
         </template>
       </PromoBanner>
-
-      <PromoBanner class="banner-breakfast">
-        <template #text>
-          <h2 class="banner-heading">Make your Breakfast Healthy and Easy</h2>
-        </template>
-        <template #button>
-          <a href="#" class="shop-btn green-btn">Shop Now <span class="arrow-svg-icon"></span></a>
-        </template>
-        <template #image>
-          <img src="/images/StrawberryMilk.png" alt="Breakfast Products" class="banner-img" />
-        </template>
-      </PromoBanner>
-
-      <PromoBanner class="banner-organic">
-        <template #text>
-          <h2 class="banner-heading">The best Organic Products Online</h2>
-        </template>
-        <template #button>
-          <a href="#" class="shop-btn orange-btn">Shop Now <span class="arrow-svg-icon"></span></a>
-        </template>
-        <template #image>
-          <img src="/images/BacketOfVegetable.png" alt="Organic Products" class="banner-img" />
-        </template>
-      </PromoBanner>
-
     </section>
   </div>
 </template>
