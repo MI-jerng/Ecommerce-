@@ -1,16 +1,30 @@
 <template>
-  <div class="promo-banner-card">
+  <div class="promo-banner-card" :style="{ backgroundColor: color }">
     <!-- NEW: content-area holds text/button and sits above the background image -->
     <div class="content-area">
       <div class="text-and-button-area">
-        <slot name="text"></slot>
-        <slot name="button" :onShopNow="handleShopNow"></slot>
+        <!-- text slot with fallback to title prop -->
+        <slot name="text">
+          <div class="default-text">
+            <h3 class="promo-title">{{ title }}</h3>
+          </div>
+        </slot>
+
+        <!-- button slot with fallback button that uses buttonColor and handleShopNow -->
+        <slot name="button" :onShopNow="handleShopNow">
+          <button class="shop-btn" :style="{ backgroundColor: buttonColor }" @click="handleShopNow">
+            Shop Now
+          </button>
+        </slot>
       </div>
     </div>
 
     <!-- image-area is now positioned behind the content -->
     <div class="image-area" aria-hidden="true">
-      <slot name="image"></slot>
+      <!-- image slot with fallback to image prop -->
+      <slot name="image">
+        <img :src="image" alt="" class="banner-img" />
+      </slot>
     </div>
   </div>
 </template>
@@ -18,16 +32,40 @@
 <script lang="ts">
 export default {
   props: {
-    heading: {
+    // replaced single heading prop with structured promotion props
+    title: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
+    color: {
+      type: String,
+      default: '#F0E9D7',
+    },
+    image: {
+      type: String,
+      default: '../assets/images/onion.jpg',
+    },
+    buttonColor: {
+      type: String,
+      default: '#42B678',
+    },
+    url: {
+      type: String,
+      default: '',
+    },
   },
   methods: {
     handleShopNow() {
-      alert(`Let's shop ${this.heading}`);
-    }
-  }
+      alert(`Let's shop: ${this.title}`)
+      // If url is provided, optionally navigate after alert
+      if (this.url) {
+        // setTimeout allows alert to display before navigation
+        setTimeout(() => {
+          window.location.href = this.url
+        }, 300)
+      }
+    },
+  },
 }
 </script>
 
@@ -81,7 +119,6 @@ export default {
   justify-content: center;
   align-items: flex-end; /* keep image anchored bottom-right */
   z-index: 1;
-
 }
 
 /* Ensure the slotted image fills area nicely */
@@ -121,5 +158,21 @@ export default {
     max-width: 100%;
     align-self: center;
   }
+}
+
+/* minimal styles for fallback title and button */
+.promo-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #222;
+}
+
+.shop-btn {
+  border: none;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
 }
 </style>

@@ -5,13 +5,13 @@
         v-for="category in categories"
         :key="category.name"
         class="category-item"
-        :style="{ backgroundColor: category.bgColor }"
+        :style="{ backgroundColor: category.color }"
       >
         <div class="icon-box">
           <img :src="category.image" :alt="category.name" class="category-icon" />
         </div>
         <p class="category-name">{{ category.name }}</p>
-        <p class="item-count">{{ category.count }} items</p>
+        <p class="item-count">{{ category.productCount }} items</p>
       </div>
     </div>
   </section>
@@ -21,9 +21,9 @@
 defineProps<{
   categories: Array<{
     name: string;
-    count: number;
+    productCount: number;
     image: string;
-    bgColor: string;
+    color: string;
   }>;
 }>();
 </script>
