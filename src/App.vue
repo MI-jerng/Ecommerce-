@@ -3,106 +3,13 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import PromoBanner from './components/promoBanner.vue'
 import CategoryGrid from './components/CategoryGrid.vue'
+import { useProductStore } from './stores/ProductStore'
 
-const categories = ref([
-  {
-    name: 'Burger',
-    productCount: 14,
-    color: '#F2FCE4',
-    image: '/images/Burger.png',
-  },
-  {
-    name: 'Peach',
-    productCount: 17,
-    color: '#FFFCEB',
-    image: '/images/Peach.png',
-  },
-  {
-    name: 'Organic Kiwi',
-    productCount: 23,
-    color: '#ECFFEC',
-    image: '/images/Kiwi.png',
-  },
-  {
-    name: 'Red Apple',
-    productCount: 68,
-    color: '#FEEFEA',
-    image: '/images/Apple.png',
-  },
-  {
-    name: 'Snack',
-    productCount: 34,
-    color: '#FFF3EB',
-    image: '/images/snack.png',
-  },
-  {
-    name: 'Black plum',
-    productCount: 29,
-    color: '#FFF3FF',
-    image: '/images/Black-plum.png',
-  },
-  {
-    name: 'Vegetables',
-    productCount: 15,
-    color: '#F2FCE4',
-    image: '/images/Vegetable.png',
-  },
-  {
-    name: 'Headphone',
-    productCount: 18,
-    color: '#FFFCEB',
-    image: '/images/Headphone.png',
-  },
-  {
-    name: 'Cake & Milk',
-    productCount: 34,
-    color: '#F2FCE4',
-    image: '/images/Cake&Milk.png',
-  },
-  {
-    name: 'Orange',
-    productCount: 63,
-    color: '#FFF3FF',
-    image: '/images/Orange.png',
-  },
-])
+const productStore = useProductStore()
 
-// Default local banners (used as fallback or to provide images when API doesn't)
-const defaultBanners = [
-  {
-    id: 1,
-    title: 'Everyday Fresh & Clean with Our Products',
-    color: '#F0E8D5',
-    image: '/images/Onion-Banner.png',
-    imageAlt: 'Fresh Onions',
-    buttonColor: '#42B678',
-    url: '/promotions/1',
-    class: 'banner-onions',
-  },
-  {
-    id: 2,
-    title: 'Make your Breakfast Healthy and Easy',
-    color: '#F3E8E8',
-    image: '/images/StrawberryMilk.png',
-    imageAlt: 'Breakfast Products',
-    buttonColor: '#42B678',
-    url: '/promotions/2',
-    class: 'banner-breakfast',
-  },
-  {
-    id: 3,
-    title: 'The best Organic Products Online',
-    color: '#E7EAF3',
-    image: '/images/BacketOfVegetable.png',
-    imageAlt: 'Organic Products',
-    buttonColor: '#FBC040',
-    url: '/promotions/3',
-    class: 'banner-organic',
-  },
-]
-
-// start with local defaults so UI shows something immediately
-const banners = ref([...defaultBanners])
+// Use store data
+const categories = ref(productStore.categories)
+const banners = ref(productStore.promotions)
 
 // helper to test whether API provided a usable image
 const isValidImagePath = (val: any) => {
@@ -150,7 +57,7 @@ const fetchPromotions = async () => {
         console.log(`✅ Using API image for promotion "${promo.title || promo.id}":`, imagePath)
       } else {
         // try to find a matching default banner by id or title
-        const match = defaultBanners.find(
+        const match = productStore.promotions.find(
           (b) => (promo.id && b.id === promo.id) || (promo.title && b.title === promo.title),
         )
         if (match) {
@@ -180,7 +87,8 @@ const fetchPromotions = async () => {
       }
     })
 
-    banners.value = mapped
+    productStore.setPromotions(mapped)
+    banners.value = productStore.promotions
     console.log('✨ Final mapped promotions:', banners.value)
   } catch (error: any) {
     console.error('❌ Error fetching promotions:', error)
@@ -196,9 +104,16 @@ const fetchCategories = async () => {
     const response = await axios.get('http://localhost:3000/api/categories')
     console.log('✅ Categories fetched successfully:', response.data)
 
-    // Update categories with API response
+    // Update categories with API response, mapping images to full URLs
     if (response.data && Array.isArray(response.data)) {
-      categories.value = response.data
+      const mappedCategories = response.data.map((category: any) => ({
+        ...category,
+        image: isValidImagePath(category.image)
+          ? category.image
+          : `http://localhost:3000/${category.image.replace(/\\/g, '/')}`,
+      }))
+      productStore.setCategories(mappedCategories)
+      categories.value = productStore.categories
     }
   } catch (error) {
     console.error('❌ Error fetching categories:', error)
