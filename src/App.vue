@@ -2,6 +2,9 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import Menu from './components/Menu.vue'
+import Searchbox from './components/Searchbox.vue'
+import MenuItem from './components/MenuItem.vue'
+import Showcase from './components/Showcase.vue'
 import PromoBanner from './components/promoBanner.vue'
 import CategoryGrid from './components/CategoryGrid.vue'
 import Product from './components/Product.vue'
@@ -102,6 +105,13 @@ onMounted(() => {
   <div class="app-wrapper">
     <!-- Menu Header -->
     <Menu />
+
+    <!-- Search and Menu rows -->
+    <Searchbox />
+    <MenuItem />
+
+    <!-- Showcase hero -->
+    <Showcase image="/images/BacketOfVegetable.png" bg="#fdf4df" />
 
     <!-- Render each category individually -->
     <div class="category-list">
