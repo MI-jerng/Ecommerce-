@@ -1,136 +1,108 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import Menu from './components/Menu.vue'
 import PromoBanner from './components/promoBanner.vue'
 import CategoryGrid from './components/CategoryGrid.vue'
+import Product from './components/Product.vue'
 import { useProductStore } from './stores/ProductStore'
 
 const productStore = useProductStore()
 
-// Use store data
+// State for filtering
+const currentGroupId = ref(1)
+
+// Use store data - categories and promotions are now in the store with API data
 const categories = ref(productStore.categories)
 const banners = ref(productStore.promotions)
 
-// helper to test whether API provided a usable image
-const isValidImagePath = (val: any) => {
-  if (!val) return false
-  if (typeof val !== 'string') return false
-  const v = val.trim()
-  return (
-    v.startsWith('/') ||
-    v.startsWith('http://') ||
-    v.startsWith('https://') ||
-    v.startsWith('data:')
-  )
-}
+// Computed properties using store getters
+const popularProducts = computed(() => productStore.getPopularProducts)
+const categoriesByGroup = computed(() => productStore.getCategoriesByGroup(currentGroupId.value))
+const productsByGroup = computed(() => productStore.getProductsByGroup(currentGroupId.value))
+const inStockProducts = computed(() => productStore.getInStockProducts)
+const totalProducts = computed(() => productStore.getTotalProducts)
 
-// Fetch promotions/banners from API (improved mapping & fallback)
-const fetchPromotions = async () => {
-  try {
-    console.log('🔄 Fetching promotions from API...')
-    const response = await axios.get('http://localhost:3000/api/promotions')
-    console.log('✅ Promotions fetched successfully:', response.data)
+// Featured product for detail view (first popular product)
+const featuredProduct = computed(() => {
+  return productStore.getPopularProducts[0] || null
+})
 
-    // unwrap possible wrappers
-    let dataArray = response.data
-    if (!Array.isArray(dataArray)) {
-      dataArray = response.data?.data || response.data?.promotions || []
-    }
+// Helper to fix image paths from API (convert backslashes and ensure full URL)
+const fixImagePath = (imagePath: string): string => {
+  if (!imagePath) return ''
 
-    if (!Array.isArray(dataArray) || dataArray.length === 0) {
-      console.warn(
-        '⚠️ Promotions API returned empty or unexpected structure; keeping local defaults',
-      )
-      return
-    }
-
-    // map API items to the shape expected by PromoBanner, providing image fallback
-    const mapped = dataArray.map((promo: any) => {
-      // choose image: API image if valid, else try to find default by id or title, else placeholder
-      let imagePath = null
-      if (
-        isValidImagePath(promo.image) ||
-        isValidImagePath(promo.imageUrl) ||
-        isValidImagePath(promo.photo)
-      ) {
-        imagePath = promo.image || promo.imageUrl || promo.photo
-        console.log(`✅ Using API image for promotion "${promo.title || promo.id}":`, imagePath)
-      } else {
-        // try to find a matching default banner by id or title
-        const match = productStore.promotions.find(
-          (b) => (promo.id && b.id === promo.id) || (promo.title && b.title === promo.title),
-        )
-        if (match) {
-          imagePath = match.image
-          console.log(
-            `ℹ️ No API image for "${promo.title || promo.id}", using local default image:`,
-            imagePath,
-          )
-        } else {
-          imagePath = '/images/default-banner.png' // ensure this file exists in /public/images or point to a valid placeholder
-          console.log(
-            `⚠️ No image found for "${promo.title || promo.id}", using placeholder:`,
-            imagePath,
-          )
-        }
-      }
-
-      return {
-        id: promo.id,
-        title: promo.title || promo.name || 'Promotion',
-        color: promo.color || promo.backgroundColor || '#FFFFFF',
-        image: imagePath,
-        imageAlt: promo.imageAlt || promo.alt || promo.title || '',
-        buttonColor: promo.buttonColor || promo.button_color || '#42B678',
-        url: promo.url || promo.link || '/',
-        class: promo.class || 'banner-default',
-      }
-    })
-
-    productStore.setPromotions(mapped)
-    banners.value = productStore.promotions
-    console.log('✨ Final mapped promotions:', banners.value)
-  } catch (error: any) {
-    console.error('❌ Error fetching promotions:', error)
-    console.warn('🔄 Using fallback local banners data')
-    // keep existing banners (defaults)
+  // If it's already an absolute URL or public path, return as-is
+  if (
+    imagePath.startsWith('http://') ||
+    imagePath.startsWith('https://') ||
+    imagePath.startsWith('/')
+  ) {
+    return imagePath
   }
+
+  // Fix backslashes to forward slashes and prepend API base URL
+  const fixedPath = imagePath.replace(/\\/g, '/')
+  return `http://localhost:3000/${fixedPath}`
 }
 
-// Fetch categories from API
+// Fetch categories from API and update store
 const fetchCategories = async () => {
   try {
     console.log('🔄 Fetching categories from API...')
     const response = await axios.get('http://localhost:3000/api/categories')
-    console.log('✅ Categories fetched successfully:', response.data)
+    console.log('✅ Categories fetched:', response.data)
 
-    // Update categories with API response, mapping images to full URLs
     if (response.data && Array.isArray(response.data)) {
-      const mappedCategories = response.data.map((category: any) => ({
-        ...category,
-        image: isValidImagePath(category.image)
-          ? category.image
-          : `http://localhost:3000/${category.image.replace(/\\/g, '/')}`,
+      // Map categories and fix image paths
+      const mappedCategories = response.data.map((cat: any) => ({
+        ...cat,
+        image: fixImagePath(cat.image),
       }))
-      productStore.setCategories(mappedCategories)
-      categories.value = productStore.categories
+      console.log('📦 Updated categories:', mappedCategories)
+      categories.value = mappedCategories
     }
-  } catch (error) {
-    console.error('❌ Error fetching categories:', error)
-    console.warn('🔄 Using fallback local categories data')
-    // Keep local categories as fallback
+  } catch (error: any) {
+    console.error('❌ Error fetching categories:', error.message)
+    console.log('🔄 Using store default categories')
   }
 }
 
-// Call fetch methods on component mount
+// Fetch promotions from API and update store
+const fetchPromotions = async () => {
+  try {
+    console.log('🔄 Fetching promotions from API...')
+    const response = await axios.get('http://localhost:3000/api/promotions')
+    console.log('✅ Promotions fetched:', response.data)
+
+    if (response.data && Array.isArray(response.data)) {
+      // Map promotions and fix image paths
+      const mappedPromotions = response.data.map((promo: any) => ({
+        ...promo,
+        image: fixImagePath(promo.image),
+      }))
+      console.log('📦 Updated promotions:', mappedPromotions)
+      banners.value = mappedPromotions
+    }
+  } catch (error: any) {
+    console.error('❌ Error fetching promotions:', error.message)
+    console.log('🔄 Using store default promotions')
+  }
+}
+
+// Fetch data on component mount
 onMounted(() => {
+  console.log('🚀 App mounted, fetching API data...')
   fetchCategories()
   fetchPromotions()
 })
 </script>
 
 <template>
-  <div class="home-page-container">
+  <div class="app-wrapper">
+    <!-- Menu Header -->
+    <Menu />
+
     <!-- Render each category individually -->
     <div class="category-list">
       <CategoryGrid :categories="categories" />
@@ -165,20 +137,52 @@ onMounted(() => {
         </template>
       </PromoBanner>
     </section>
+
+    <!-- Featured Product Detail -->
+    <section v-if="featuredProduct" class="featured-product-section">
+      <Product />
+    </section>
   </div>
 </template>
 
 <style scoped>
-/* Layout and Container Styles (omitted for brevity) */
-.home-page-container {
-  padding-top: 20px;
+.app-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
 }
+
+.category-list {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .banner-group {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  max-width: 1200px;
-  margin: 30px auto;
+  gap: 0;
+  width: 100%;
+  max-width: 1400px;
+  height: auto;
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Featured Product Section */
+.featured-product-section {
+  width: 100%;
+  max-width: 1400px;
+  background: #f5f5f5;
+  padding: 40px 0;
+  margin: 0 auto;
 }
 
 /* Text and Heading Styling (omitted for brevity) */
