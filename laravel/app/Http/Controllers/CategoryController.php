@@ -3,31 +3,51 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Category;
 
 class CategoryController extends Controller
 {
-    public function getCategories()
-    {
-        // Get all categories
+    // --- Get /api/categories
+    public function getCategories() {
+        $categories = Category::all();
+        return response()->json($categories);
     }
 
-    public function createCategory(Request $request)
-    {
-        // Create 1 category
+    // --- Post /api/categories
+    public function createCategory(Request $request) {
+        $category = Category::create([
+            'name' => $request->name
+        ]);
+        return response()->json($category, 201);
     }
 
-    public function getCategoryId($categoryId)
-    {
-        // Get 1 category by categoryId
+    // --- Get /api/categories/{categoryId}
+    public function getCategoryId($categoryId) {
+        $category = Category::find($categoryId);
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+        return response()->json($category);
     }
 
-    public function updateCategory(Request $request, $categoryId)
-    {
-        // Update 1 category
+    // --- Patch /api/categories/{categoryId}
+    public function updateCategory(Request $request, $categoryId) {
+        $category = Category::find($categoryId);
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+        $category->name = $request->name;
+        $category->save();
+        return response()->json($category);
     }
 
-    public function deleteCategory($categoryId)
-    {
-        // Delete 1 category
+    // --- Delete /api/categories/{categoryId}
+    public function deleteCategory($categoryId) {
+        $category = Category::find($categoryId);
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+        $category->delete();
+        return response()->json(['message' => 'Category deleted successfully']);
     }
 }
