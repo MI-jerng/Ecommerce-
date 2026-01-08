@@ -9,5 +9,21 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'created_by'];
+
+    /**
+     * Get the products for the category.
+     */
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /**
+     * Get the user who created the category.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }
