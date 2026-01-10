@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AuthorController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\AudienceController;
+use App\Http\Controllers\SubscribeController;
+use App\Http\Controllers\CommentController;
 
 // Public routes
 Route::post('/login', function (Request $request) {
@@ -54,5 +59,28 @@ Route::middleware('auth:api')->group(function () {
     Route::controller(UserController::class)->prefix('users')->group(function () {
         Route::get('/', 'index');
         Route::patch('/{user}/role', 'updateRole');
+    });
+
+    Route::controller(AuthorController::class)->prefix('authors')->group(function () {
+        Route::post('/', 'store');
+        Route::get('/{author}/articles', 'getArticles');
+        Route::get('/{author}/audiences', 'getAudiences');
+    });
+
+    Route::controller(ArticleController::class)->prefix('articles')->group(function () {
+        Route::post('/', 'store');
+        Route::get('/{article}/audiences', 'getAudiences');
+    });
+
+    Route::controller(AudienceController::class)->prefix('audiences')->group(function () {
+        Route::post('/', 'store');
+        Route::get('/{audience}/comments', 'getComments');
+    });
+
+    Route::post('/subscribe', [SubscribeController::class, 'subscribe']);
+
+    Route::controller(CommentController::class)->prefix('comments')->group(function () {
+        Route::post('/', 'store');
+        Route::get('/', 'index');
     });
 });
