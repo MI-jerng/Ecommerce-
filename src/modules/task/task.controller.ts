@@ -8,32 +8,37 @@ import {
   Post,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
+import { CreateTaskDto } from './dto/create-task.dto';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly taskService: TaskService) {}
 
+  @Get('/')
+  findAll() {
+    return this.taskService.findAll();
+  }
+
   @Get('/:id')
-  getTask(@Param('id') id: string) {
-    return this.taskService.getTask(id);
+  findOne(@Param('id') id: number) {
+    return this.taskService.findOne(id);
   }
+
   @Post('/')
-  createTask(@Body() body: any) {
-    return this.taskService.createTask(body);
+  create(@Body() body: CreateTaskDto) {
+    return this.taskService.create(body);
   }
 
-  @Patch('/:id/done')
-  markTaskAsDone(@Body() body: any, @Param('id') id: string) {
-    return this.taskService.updateTask(id, body);
-  }
-
-  @Patch('/:id/pending')
-  markTaskAsPending(@Body() body: any, @Param('id') id: string) {
-    return this.taskService.updateTask(id, body);
+  @Patch('/:id')
+  update(
+    @Param('id') id: number,
+    @Body() body: Partial<CreateTaskDto>,
+    ) {
+      return this.taskService.update(Number(id), body);
   }
 
   @Delete('/:id')
-  deleteTask(@Param('id') id: string) {
-    return this.taskService.deleteTask(id);
+  remove(@Param('id') id: number) {
+    return this.taskService.remove(Number(id));
   }
 }
