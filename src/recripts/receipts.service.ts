@@ -4,12 +4,14 @@ import { Receipt } from './receipt.entity';
 import { Repository } from 'typeorm';
 import { CreateReceiptDto } from './dto/create-receipt.dto';
 import { UpdateReceiptDto } from './dto/update-receipt.dto';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class ReceiptsService {
   constructor(
     @InjectRepository(Receipt)
     private readonly receiptRepo: Repository<Receipt>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll() {
@@ -18,17 +20,22 @@ export class ReceiptsService {
 
   async findOne(receiptId: string) {
     const receipt = await this.receiptRepo.findOne({ where: { receiptId } });
-    if (!receipt) throw new NotFoundException(`Receipt not found`);
+    if (!receipt) throw new NotFoundException(`Receipt not found`); // if receipt is not found, it will print(Receipt not found)
     return receipt;
   }
 
   async create(dto: CreateReceiptDto) {
-    const reciept = this.receiptRepo.create({
-      issuedAt: new Date(dto.issuedAt),
+    const receipt = this.receiptRepo.create({
+      issuedAt: new Date(dto.issuedAt), // Convert string to Date
       name: dto.name,
       price: dto.price,
     });
-    return this.receiptRepo.save(reciept);
+    const saved = await this.receiptRepo.save(receipt);
+    this.notificationsService.notify('receipt_created', {
+      receiptId: saved.receiptId,
+      price: saved.price,
+    });
+    return saved;
   }
 
   async update(receiptId: string, dto: UpdateReceiptDto) {

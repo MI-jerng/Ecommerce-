@@ -12,7 +12,7 @@ import { Request } from 'express';
 export class LoggingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest<Request>();
-    const { method, url, body } = req;
+    const { method, url, body } = req; // Extract method, url, and body from the request
     const start = Date.now();
 
     // Log event payload for POST /orders

@@ -5,33 +5,33 @@ import { UpdateReceiptDto } from './dto/update-receipt.dto';
 import { ApiKeyGuard } from '../common/guards/api-key.guard';
 import { UseGuards } from '@nestjs/common';
 
-@UseGuards(ApiKeyGuard)
+@UseGuards(ApiKeyGuard) // Apply the API key guard to all routes in this controller, If the API key is missing or invalid, it will return a 401 Unauthorized response
 @Controller('receipts')
 export class ReceiptsController {
-    constructor(private readonly receiptsService: ReceiptsService) {}
-    
-    @Get()
-    findAll() {
-        return this.receiptsService.findAll();
-    }
+  constructor(private readonly receiptsService: ReceiptsService) {}
 
-    @Get('/:id')
-    findOne(@Param('id') id: string) {
-        return this.receiptsService.findOne(id);
-    }
+  @Get()
+  findAll() {
+    return this.receiptsService.findAll();
+  }
 
-    @Post()
-    create(@Body() dto: CreateReceiptDto) {
-        return this.receiptsService.create(dto);
-    }
+  @Get('/:id')
+  findOne(@Param('id') id: string) {
+    return this.receiptsService.findOne(id);
+  }
 
-    @Patch('/:id')
-    update(@Param('id') id: string, @Body() dto: UpdateReceiptDto) {
-        return this.receiptsService.update(id, dto);
-    }
+  @Post()
+  create(@Body() dto: CreateReceiptDto) {
+    return this.receiptsService.create(dto);
+  }
 
-    @Delete('/:id')
-    remove(@Param('id') id: string) {
-        return this.receiptsService.remove(id);
-    }
+  @Patch('/:id')
+  update(@Param('id') id: string, @Body() dto: UpdateReceiptDto) {
+    return this.receiptsService.update(id, dto);
+  }
+
+  @Delete('/:id')
+  remove(@Param('id') id: string) {
+    return this.receiptsService.remove(id);
+  }
 }

@@ -1,14 +1,14 @@
 import { IsDateString, IsString, IsNotEmpty, IsNumber, Min } from 'class-validator';
 
 export class CreateReceiptDto {
-    @IsDateString()
-    issuedAt: string;
+  @IsDateString()
+  issuedAt: string;
 
-    @IsString()
-    @IsNotEmpty()
-    name: string;
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
-    @IsNumber()
-    @Min(0)
-    price: number;
+  @IsNumber()
+  @Min(0)
+  price: number;
 }

@@ -9,7 +9,7 @@ export class Task {
   @Column()
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true }) // Description can be null
   description: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
