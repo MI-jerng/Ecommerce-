@@ -12,6 +12,12 @@ import { ReceiptsModule } from './recripts/receipts.module';
 import { OrderModule } from './order/order.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CoreModule } from './core/core.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
+import { Category } from './category/category.entity';
+import { Product } from './product/product.entity';
+import { GraphqlModule } from './graphql/graphql.module';
 
 @Module({
   imports: [
@@ -23,9 +29,16 @@ import { CoreModule } from './core/core.module';
       username: 'postgres',
       password: 'Apple@747525',
       database: 'todo',
-      entities: [User, Task, Receipt],
+      entities: [User, Task, Receipt, Category, Product],
       synchronize: true,
     }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      typePaths: [join(process.cwd(), 'src/graphql/schema/*.graphql')],
+      // autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
+      playground: true,
+    }),
+    GraphqlModule,
     UserModule,
     TaskModule,
     ReceiptsModule,

@@ -4,6 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Request } from 'express';
@@ -11,8 +12,14 @@ import { Request } from 'express';
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const req = context.switchToHttp().getRequest<Request>();
-    const { method, url, body } = req; // Extract method, url, and body from the request
+    const httpReq = context.switchToHttp().getRequest<Request>();
+    const gqlReq = !httpReq?.method
+      ? GqlExecutionContext.create(context).getContext()?.req
+      : undefined;
+    const req = httpReq?.method ? httpReq : gqlReq;
+    const method = req?.method ?? 'GRAPHQL';
+    const url = req?.url ?? '/graphql';
+    const body = req?.body;
     const start = Date.now();
 
     // Log event payload for POST /orders
